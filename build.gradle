@@ -1,0 +1,110 @@
+//war프로젝트에는 eclipse보다 eclipse-wtp가 더 적절하다.
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'war'
+
+// gradle 프로젝트 속성
+sourceCompatibility = 1.8 //자바 소스를 컴파일 시 사용하기 위한 자바 버전
+targetCompatibility = 1.8 //클래스 파일을 생성을 위한 자바 버전
+version = '1.0'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8' //소스 파일의 인코딩 형식 지정
+
+//버전 관리
+def version = [
+	spring: '5.2.2.RELEASE',
+	servletAPI: '3.1.0',
+	junit: '4.12'
+]
+
+//ecplise 플러그인
+eclipse {
+	// 이클립스 상에서 프로젝트가 gradle로 필드한다는걸 알려준다.
+	project.natures "org.springsource.ide.eclipse.gradle.core.nature"
+	//facet 설정
+	wtp {
+		facet {
+			facet name: 'jst.web', version: '3.1' // Servlet spec version
+			facet name: 'jst.java', version: '1.8' // java version
+		}
+	}
+}
+
+// java plugin에 속하며 jar파일에 대해서 설정 할 수 있다.
+jar {
+	manifest{
+		attributes 'Implementation-Title': 'Gradle Quickstart',
+				   'Implementation-Version' : version
+	}
+	// manifest : MANIFEST.MF 파일에 들어갈 속성=값 정보를 설정. 이 파일은 jar 파일 안에 META-INF에 들어간다.
+	// archiveName : JAR 파일 이름. 지정하지 않으면 다음 조합으로 이름 지정. baseName-appendix-version-classifier.extension
+	// baseName : JAR 파일의 기본 이름.
+	// appendix : 추가할 말.
+	// version : 버전.
+	// classifier :
+	// extension : 확장자. 기본값은 jar
+	// excludes : jar 파일에서 제외할 파일에 대한 지정. ex) ['**/*.txt']
+	// includes : jar 파일에서 포함할 파일에 대한 지정. ex) ['conf/*.xml']
+}
+
+// 의존 라이브러리를 가져올 저장소 설정
+repositories {
+    mavenCentral()
+    jcenter()
+    // mavenCentral() : Maven 중앙 서버를 저장소로 지정.(http://repo1.mavne.org/maven2/)
+    // flatDir() : 로컬 폴더를 저장소로 지정
+    // ivy() : Apache Ivy 서버를 저장소로 지정
+    // jcenter() : Bintray의 jcenter 서버를 저장소로 지정
+    // mavenLocal() : Maven로컬 임시 보관소를 저장소로 지정
+}
+
+// 프로젝트에서 사용할 의존 라이브러리 지정
+dependencies {
+    providedCompile "javax.servlet:javax.servlet-api:${version.servletAPI}"
+    
+    compile "org.springframework:spring-webmvc:${version.spring}"
+    
+    testCompile "junit:junit:${version.junit}"
+    // compile : 라이브러리를 compileJava 작업을 수행할 때 사용
+    // runtime : 라이브러리를 실행 시에 사용
+    // testCompile : 라이브러리를 compileTestJava 작업을 수행할 때 사용. compileJava를 포함하며 compile한 라이브러리는 제외한다.
+    // testRuntime : 라이브러리를 test 작업을 수행할 때 사용. compileJava, compileTestJava를 포함하며 compile, testCompile한 라이브러리는 제외한다.
+    // providedCompile : compile과 같지만 buile에 포함하지 않는다.
+    // providedRintime : testCompile과 같지만 build에 포함하지 않는다.
+    /*
+    	표기법
+    	- 'group:name:version:classifier
+    	- group: '그룹명', name: '라이브러리 이름', version: '라이브러리 버전', classifier: '분류 접미사' (name만 필수 항목)
+    */
+}
+
+test{
+	systemProperties 'property': 'value'
+	// systemProperties : 테스트를 실행하는 JVM에 전달할 시스템 프로퍼티 지정 
+	// classpath : 테스트 작업을 수행할 때 사용할 클래스 경로 지정
+	// excludes : 테스트에서 제외할 클래스 지정. ANT 스타일 패턴을 사용. ex) excludes = ['org/foo/**']
+	// includes : 테스트에 포함할 클래스 지정. ANT 스타일 패턴을 사용. ex) includes = ['org/boo/**']
+	// minHeapSize : 테스트 할 때 JVM에 전달할 최소 힙 메모리 크기
+	// maxHeapSize : 테스트 할 때 JVM에 전달할 최대 힙 메모리 크기
+	// jvmArgs : JVM에 전달할 추가 인자 값. (systemProperties, [max/min]HeapSize 제외)
+	// useJUnit() : 테스트할 때 사용할 프레임워크로 JUnit 지정 (기본값)
+	// useTestNG() : 테스트할 때 사용할 프레임워크로 useTestNG 지정
+	// beforeTest{} : 테스트를 시작하기 전에 수행할 명령 지정
+}
+
+// 아카이브파일(.jar) 배포
+uploadArchives{
+	repositories{
+		flatDir{
+			dirs 'repos'
+		}
+	}
+}
+
+
+/*
+	참조
+	https://dynaticy.tistory.com/entry/Gradle%EB%A1%9C-SpringMVC-%EC%95%84%EC%A3%BC-%EC%89%BD%EA%B2%8C-%EA%B5%AC%EC%B6%95%ED%95%98%EA%B8%B0-%EC%B4%88%EB%B3%B4%EC%9E%90%EC%9A%A9
+	https://guides.gradle.org/building-java-web-applications/
+	https://docs.gradle.org/current/dsl/index.html
+*/
